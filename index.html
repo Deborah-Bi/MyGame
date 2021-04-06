@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!-- Exemple simple de création d'objets + mouseContraint dans matter.js -->
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>My Game</title>
+		<meta charset="utf-8" />
+ 		<link rel="stylesheet" type="text/css" href="index.css"/>
+	</head>
+	
+	<body>
+		<script src="matter.js"></script>
+		<center><h1> My Game</h1></center>
+			<center><p> Ce jeu a pour but de faire tomber tous les cubes avec le lanceur qui est une petite boule grâce à matter.js, vous avez que 20 essais pour faire tomber tous les cubes.(pour voir le nombre d'essais qu'il vous reste, il faut aller dans la console)
+			<br>Matter.js est un moteur de physique de corps rigide 2D écrit en JavaScript.</br> 
+			<br>Cette bibliothèque peut vous aider à simuler facilement la physique 2D dans le navigateur.</br></center>
+			</p>
+			<center><p><a href="https://redstapler.co/matter-js-tutorial-game-dev/"target="_blank">Clique ici pour savoir comment créer un jeu avec matter.js</a>
+			<br><a href="https://code.tutsplus.com/tutorials/getting-started-with-matterjs-introduction--cms-28784#:~:text=and%20World%20Modules-,Matter.,area%20or%20density%20to%20them."target="_blank">Clique ici pour en savoir plus sur matter.js</a></br>
+			</center></p>
+		<nav>
+		  <ul>
+		    <center><li><img src="images.jpg" height="200"/></center></li>
+
+		  </ul>	
+
+		</nav>
+		
+		<script>
+			const moteur = Matter.Engine.create();
+			const rendu = Matter.Render.create({
+				element: document.body,
+				engine: moteur, options: {
+					width: 800,
+					height: 400,
+					// formes filaires ou coloriés
+					wireframes: false}
+			});
+			const souris = Matter.Mouse.create(rendu.canvas);
+			const contrainteSouris = Matter.MouseConstraint.create(moteur, {
+				mouse: souris,
+				constraint: {
+					render: {visible: false}
+				}
+			});
+			rendu.mouse = souris;
+			
+			//let sol = Matter.Bodies.rectangle(300,500,1000,10, {isStatic: true});
+			//let plafond = Matter.Bodies.rectangle(500,0,1000,40, {isStatic: true});
+			//let murDroit = Matter.Bodies.rectangle(0,0,40,1000, {isStatic: true});
+			//let murGauche = Matter.Bodies.rectangle(800,0,40,1000, {isStatic: true});
+			let compteur = 20;
+			let plateforme = Matter.Bodies.rectangle(425,350,250,10, {isStatic: true});
+			let projectile = Matter.Bodies.circle(150,200,10)
+			let lanceur = Matter.Constraint.create({
+			 // point fixe
+			 pointA: {x: 150, y:200},
+			 // pbjet attaché au lanceur
+			 bodyB: projectile,
+			 stiffness: 0.2,
+			});
+			
+			//let objet1 = Matter.Bodies.circle(200,150,75);
+			//let objet2 = Matter.Bodies.rectangle(300,100,125,75);
+			let pile = Matter.Composites.stack(325,100,7,8,0,0, function(x,y) {
+				//let faces = Math.round(Matter.Common.random(3,12));
+				return Matter.Bodies.polygon(x,y,4,20);
+			});	
+			
+			let lancer = false
+			Matter.Events.on(contrainteSouris, 'enddrag', function(fonct){
+			 if (fonct.body === projectile) lancer = true;
+			});
+			
+			Matter.Events.on(moteur,'afterUpdate', function(){
+			  if (lancer && Math.abs(projectile.position.x - 150) < 20 && Math.abs(projectile.position.y - 200) < 10 && compteur > 0){
+			   projectile = Matter.Bodies.circle(150,200,10);
+			   Matter.World.add(moteur.world, projectile);
+			   lanceur.bodyB = projectile;
+			   lancer = false;
+			   compteur = compteur - 1;
+			   console.log(compteur)
+			  }
+			});
+			 
+			Matter.World.add(moteur.world, [pile,contrainteSouris,plateforme,lanceur,projectile]);
+			Matter.Engine.run(moteur);
+			Matter.Render.run(rendu);
+		</script>
+		<footer>
+		    <p>BITUMBA - Tous droits réservés</p>
+		</footer>
+	</body>
+</html>
+				
+			
